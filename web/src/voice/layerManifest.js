@@ -482,6 +482,7 @@ export const VOICE_OFF_LAYERS = Object.freeze({
   // Same budget: a historical wreck archive waits for room too.
   shipwrecks: 'historical shipwreck archive; no room in the prompt budget',
   news: 'browsed in the News panel; voice tools are a later step',
+  'vision-cameras': 'Argus Earth pipeline layer; Groq voice agent is separate',
   'wildlife-sightings':
     'community observation layer; no room in the prompt budget',
   rail: 'train layer; no room in the prompt budget, and "trains" still names transit',

@@ -4,7 +4,9 @@ import traceback
 
 from vision.fetch.cameras import load
 from vision.fetch.fetcher import fetch_cycle
+from vision.models.yolo import run_density
 from vision.store.db import connect
+from vision.store.export import export
 
 
 def cycle(cams):
@@ -12,8 +14,10 @@ def cycle(cams):
     try:
         total, ok, new = fetch_cycle(con, cams)
         print(f"[fetch] {total} cams, {ok} ok, {new} new", flush=True)
+        print(f"[density] {run_density(con)} frames", flush=True)
     finally:
         con.close()
+    print(f"[export] {export()} cameras", flush=True)  # one process owns the DB: no cross-process lock fights
 
 
 if __name__ == "__main__":
