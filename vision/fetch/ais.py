@@ -38,22 +38,26 @@ def flush(rows):
 
 async def stream_once(key):
     rows, last = [], time.time()
-    async with websockets.connect(URL, open_timeout=45) as ws:
-        await ws.send(json.dumps({"APIKey": key, "BoundingBoxes": BBOX, "FilterMessageTypes": ["PositionReport"]}))
-        async for raw in ws:
-            m = json.loads(raw)
-            if "error" in m:
-                raise RuntimeError(m["error"])
-            p = m.get("Message", {}).get("PositionReport")
-            if not p:  # e.g. SubscriptionConfirmation
-                continue
-            meta = m["MetaData"]
-            rows.append((meta["MMSI"], datetime.now(timezone.utc).replace(tzinfo=None), p["Latitude"], p["Longitude"],
-                         p["Sog"], p["Cog"], meta.get("ShipName", "").strip()))
-            if time.time() - last > FLUSH_S:
-                flush(rows)
-                print(f"[ais] flushed {len(rows)}", flush=True)
-                rows, last = [], time.time()
+    try:
+        async with websockets.connect(URL, open_timeout=45) as ws:
+            await ws.send(json.dumps({"APIKey": key, "BoundingBoxes": BBOX, "FilterMessageTypes": ["PositionReport"]}))
+            async for raw in ws:
+                m = json.loads(raw)
+                if "error" in m:
+                    raise RuntimeError(m["error"])
+                p = m.get("Message", {}).get("PositionReport")
+                if not p:  # e.g. SubscriptionConfirmation
+                    continue
+                meta = m["MetaData"]
+                rows.append((meta["MMSI"], datetime.now(timezone.utc).replace(tzinfo=None), p["Latitude"],
+                             p["Longitude"], p["Sog"], p["Cog"], meta.get("ShipName", "").strip()))
+                if time.time() - last > FLUSH_S:
+                    flush(rows)
+                    print(f"[ais] flushed {len(rows)}", flush=True)
+                    rows, last = [], time.time()
+    finally:
+        if rows:  # a drop must not lose the buffered minute
+            flush(rows)
 
 
 async def main():
@@ -62,8 +66,8 @@ async def main():
         try:
             await stream_once(key)
         except Exception as e:
-            print(f"[ais] {e!r}, reconnecting in 10s", flush=True)
-            await asyncio.sleep(10)
+            print(f"[ais] {e!r}", flush=True)
+        await asyncio.sleep(10)  # also after a clean close: no hot reconnect loop
 
 
 if __name__ == "__main__":

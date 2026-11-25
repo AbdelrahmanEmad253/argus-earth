@@ -1,6 +1,7 @@
 """Write web/public/vision/latest.json (contract/README.md). Atomic: tmp file then replace."""
 import json
 import os
+import time
 from datetime import datetime, timezone
 
 from vision.store.db import ROOT, connect
@@ -21,7 +22,9 @@ def build(con):
         QUALIFY row_number() OVER (PARTITION BY c.camera_id ORDER BY f.fetched_at DESC) = 1
         ORDER BY c.camera_id""").fetchall()
     res = {}
-    for fid, feat, val in con.execute("SELECT frame_id, feature, value_json FROM results").fetchall():
+    ids = [r[5] for r in rows]  # only the frames being exported, not all history
+    for fid, feat, val in con.execute("SELECT frame_id, feature, value_json FROM results "
+                                      "WHERE list_contains(?, frame_id)", [ids]).fetchall():
         res[(fid, feat)] = json.loads(val)
     cams = [dict(camera_id=cid, lat=lat, lon=lon, frame_time=z(t), is_night=bool(night),
                  **{f: res.get((fid, f)) for f in FEATURES})  # missing result -> null (not computed yet)
@@ -38,7 +41,14 @@ def export():
     OUT.parent.mkdir(parents=True, exist_ok=True)
     tmp = OUT.with_suffix(".tmp")
     tmp.write_text(json.dumps(doc, indent=1))
-    os.replace(tmp, OUT)  # browser never sees a half-written file
+    for _ in range(5):  # browser never sees a half-written file
+        try:
+            os.replace(tmp, OUT)
+            break
+        except PermissionError:  # Windows: the dev server may hold the file open
+            time.sleep(0.5)
+    else:
+        OUT.write_text(tmp.read_text())  # ponytail: non-atomic fallback; readers may rarely see a partial file
     return len(doc["cameras"])
 
 

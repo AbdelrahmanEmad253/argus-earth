@@ -29,10 +29,10 @@ def load_caltrans(district=7):
 def load_austin():
     out = []
     for c in _get("https://data.austintexas.gov/resource/b4k4-adkb.json?$limit=2000"):
-        if c.get("camera_status") != "TURNED_ON" or "location" not in c:
-            continue
+        if c.get("camera_status") != "TURNED_ON" or "location" not in c or not c.get("screenshot_address"):
+            continue  # one malformed record must not drop all of Austin
         lon, lat = c["location"]["coordinates"]
-        out.append(dict(camera_id=f"austin_{c['camera_id']}", source="austin", name=c["location_name"],
+        out.append(dict(camera_id=f"austin_{c['camera_id']}", source="austin", name=c.get("location_name", ""),
                         lat=lat, lon=lon, image_url=c["screenshot_address"]))
     return out
 

@@ -9,7 +9,7 @@ PLAN.md
 private/
 graphify-out/
 # data and tooling
-data/
+/data/
 .venv/
 __pycache__/
 node_modules/

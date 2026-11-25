@@ -5,8 +5,19 @@ import traceback
 from vision.fetch.cameras import load
 from vision.fetch.fetcher import fetch_cycle
 from vision.models.yolo import run_density
-from vision.store.db import connect
+from vision.store.db import ROOT, connect
 from vision.store.export import export
+
+KEEP_DAYS = 7  # PLAN: raw frames are deleted after 7 days; counts stay
+
+
+def expire_frames(con):
+    old = con.execute("SELECT frame_id, image_path FROM frames WHERE image_path IS NOT NULL "
+                      "AND fetched_at < now()::TIMESTAMP - INTERVAL (?) DAY", [KEEP_DAYS]).fetchall()
+    for fid, p in old:
+        (ROOT / p).unlink(missing_ok=True)
+        con.execute("UPDATE frames SET image_path = NULL WHERE frame_id = ?", [fid])
+    return len(old)
 
 
 def cycle(cams):
@@ -15,6 +26,7 @@ def cycle(cams):
         total, ok, new = fetch_cycle(con, cams)
         print(f"[fetch] {total} cams, {ok} ok, {new} new", flush=True)
         print(f"[density] {run_density(con)} frames", flush=True)
+        print(f"[expire] {expire_frames(con)} frames", flush=True)
     finally:
         con.close()
     print(f"[export] {export()} cameras", flush=True)  # one process owns the DB: no cross-process lock fights
@@ -26,14 +38,17 @@ if __name__ == "__main__":
     ap.add_argument("--per-source", type=int, default=20)
     ap.add_argument("--once", action="store_true")
     a = ap.parse_args()
-    cams = load(a.sources.split(","), a.per_source)
-    print(f"[run] {len(cams)} cameras", flush=True)
+    sources, cams, n = a.sources.split(","), [], 0
     while True:
         start = time.time()
         try:
+            if not cams or n % 12 == 0:  # retry if empty, refresh the lists hourly
+                cams = load(sources, a.per_source) or cams  # keep the old list if a reload fails entirely
+                print(f"[run] {len(cams)} cameras", flush=True)
             cycle(cams)
         except Exception:  # overnight loop must survive anything
             traceback.print_exc()
+        n += 1
         if a.once:
             break
         time.sleep(max(0, 300 - (time.time() - start)))
