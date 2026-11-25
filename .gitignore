@@ -1,0 +1,15 @@
+# secrets
+.env
+.env.*
+!.env.example
+# private planning docs (not published)
+*.pdf
+PLAN.md
+01_repo_research.md
+private/
+graphify-out/
+# data and tooling
+data/
+.venv/
+__pycache__/
+node_modules/
