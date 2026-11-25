@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-25T20:30:00Z",
+  "cameras": [
+    {"camera_id": "caltrans_d7_example_downtown", "lat": 34.0522, "lon": -118.2437,
+     "frame_time": "2026-11-25T20:28:10Z", "is_night": false,
+     "density": {"car": 12, "truck": 3, "bus": 1, "motorcycle": 0, "total": 16},
+     "weather": {"label": "clear", "score": 0.91}, "people_bikes": null},
+    {"camera_id": "austin_example_1", "lat": 30.2672, "lon": -97.7431,
+     "frame_time": "2026-11-25T20:27:40Z", "is_night": false,
+     "density": {"car": 2, "truck": 0, "bus": 0, "motorcycle": 0, "total": 2},
+     "weather": null, "people_bikes": {"person": 4, "bicycle": 1}},
+    {"camera_id": "tfl_example_00001.06514", "lat": 51.5074, "lon": -0.1278,
+     "frame_time": "2026-11-25T20:29:00Z", "is_night": true,
+     "density": null, "weather": null, "people_bikes": null}
+  ]
+}

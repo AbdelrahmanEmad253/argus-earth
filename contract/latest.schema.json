@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "latest.json (DRAFT v1)",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "cameras"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": 1},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "cameras": {"type": "array", "items": {
+      "type": "object",
+      "required": ["camera_id", "lat", "lon", "frame_time", "is_night", "density", "weather", "people_bikes"],
+      "additionalProperties": false,
+      "properties": {
+        "camera_id": {"type": "string"},
+        "lat": {"type": "number", "minimum": -90, "maximum": 90},
+        "lon": {"type": "number", "minimum": -180, "maximum": 180},
+        "frame_time": {"type": "string", "format": "date-time"},
+        "is_night": {"type": "boolean"},
+        "density": {"oneOf": [{"type": "null"}, {"type": "object",
+          "required": ["car", "truck", "bus", "motorcycle", "total"],
+          "additionalProperties": false,
+          "properties": {"car": {"$ref": "#/$defs/count"}, "truck": {"$ref": "#/$defs/count"},
+                         "bus": {"$ref": "#/$defs/count"}, "motorcycle": {"$ref": "#/$defs/count"},
+                         "total": {"$ref": "#/$defs/count"}}}]},
+        "weather": {"oneOf": [{"type": "null"}, {"type": "object",
+          "required": ["label", "score"], "additionalProperties": false,
+          "properties": {"label": {"enum": ["clear", "rain", "snow", "fog", "wet_road", "unknown"]},
+                         "score": {"type": "number", "minimum": 0, "maximum": 1}}}]},
+        "people_bikes": {"oneOf": [{"type": "null"}, {"type": "object",
+          "required": ["person", "bicycle"], "additionalProperties": false,
+          "properties": {"person": {"$ref": "#/$defs/count"}, "bicycle": {"$ref": "#/$defs/count"}}}]}
+      }}}
+  },
+  "$defs": {"count": {"type": "integer", "minimum": 0}}
+}

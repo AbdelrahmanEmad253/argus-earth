@@ -1,0 +1,6 @@
+duckdb
+requests
+pillow
+ultralytics
+jsonschema
+websockets
