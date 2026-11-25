@@ -5,6 +5,7 @@ import traceback
 from vision.fetch.cameras import load
 from vision.fetch.fetcher import fetch_cycle
 from vision.models.yolo import run_density
+from vision.search.index import update_index
 from vision.store.db import ROOT, connect
 from vision.store.export import export
 
@@ -26,6 +27,10 @@ def cycle(cams):
         total, ok, new = fetch_cycle(con, cams)
         print(f"[fetch] {total} cams, {ok} ok, {new} new", flush=True)
         print(f"[density] {run_density(con)} frames", flush=True)
+        try:  # search indexing must never stop density or export
+            print(f"[embed] {update_index(con)} frames", flush=True)
+        except Exception:
+            traceback.print_exc()
         print(f"[expire] {expire_frames(con)} frames", flush=True)
     finally:
         con.close()

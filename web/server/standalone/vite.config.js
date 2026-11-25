@@ -30,6 +30,20 @@ export function standaloneConfig(
         nominatimStorageDir,
       }),
       localMcpPlugin(),
+      // Argus Earth: same-origin path to the local Python API (the browser CSP blocks other ports).
+      {
+        name: 'argus-api-proxy',
+        config: () => ({
+          server: {
+            proxy: {
+              '/argus': {
+                target: 'http://127.0.0.1:8000',
+                rewrite: (p) => p.replace(/^\/argus/, ''),
+              },
+            },
+          },
+        }),
+      },
       googleTokenUnavailablePlugin(),
       conformanceReferencesPlugin(),
       apiNotFoundPlugin(),

@@ -1,0 +1,24 @@
+{
+ "schema_version": 1,
+ "query": "snowy road",
+ "results": [
+  {
+   "camera_id": "austin_130",
+   "name": " LAVACA ST / 4TH ST",
+   "lat": 30.266876,
+   "lon": -97.745873,
+   "frame_time": "2026-11-25T21:03:25Z",
+   "score": 0.3177,
+   "image_url": "/frames/austin_130_20261125T210325Z.jpg"
+  },
+  {
+   "camera_id": "austin_564",
+   "name": " 7TH ST / COLORADO ST",
+   "lat": 30.269348,
+   "lon": -97.743774,
+   "frame_time": "2026-11-25T20:15:27Z",
+   "score": 0.2972,
+   "image_url": "/frames/austin_564_20261125T201527Z.jpg"
+  }
+ ]
+}

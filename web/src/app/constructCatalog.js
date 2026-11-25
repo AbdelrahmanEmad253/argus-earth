@@ -43,6 +43,7 @@ import { createApplicationStreetLevel } from './layers/streetLevel.js';
 import { createInfrastructureLayers } from '../data/infrastructure.js';
 import { localGeoJsonServices } from './localGeojsonServices.js';
 import { createVisionCamerasLayer } from '../layers/vision/cameras.js';
+import { createVisionSearchLayer } from '../layers/vision/search.js';
 import { createBhoteKoshiEventLayer } from '../data/bhoteKoshiEvent.js';
 import { createBhoteKoshiLocatorLayer } from '../data/bhoteKoshiLocator.js';
 
@@ -56,6 +57,7 @@ export const LOCAL_ONLY_LAYER_METADATA = Object.freeze([
   Object.freeze({ id: 'osm-places', disposition: 'local-only' }),
   // Argus Earth: points come from this machine's own pipeline output.
   Object.freeze({ id: 'vision-cameras', disposition: 'local-only' }),
+  Object.freeze({ id: 'vision-search', disposition: 'local-only' }),
 ]);
 
 /** Serialization metadata for every layer the application catalog constructs. */
@@ -224,6 +226,7 @@ export function createApplicationCatalog({
         ...createOsmOverlayLayers(),
         ...createInfrastructureLayers(localGeoJsonServices),
         createVisionCamerasLayer(localGeoJsonServices),
+        createVisionSearchLayer(localGeoJsonServices),
         createApplicationCables({ source: sources.cables }),
         createApplicationRail({
           surface,

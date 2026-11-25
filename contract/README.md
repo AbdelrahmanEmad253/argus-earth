@@ -28,7 +28,14 @@ Written by `python -m vision.store.export`. Schema: [`latest.schema.json`](lates
 Each globe layer reads only this file; build against the example before the model exists.
 
 ## Not yet defined (owners agree the format before building)
-`timeline/<camera_id>.json` (patterns), search API response, `fire_checks.json`, `ship_detections.json`.
+`timeline/<camera_id>.json` (patterns), `fire_checks.json`, `ship_detections.json`.
 
 ## Extra files (not in the original plan)
 - `data/ais.duckdb`: table `ais(mmsi, t, lat, lon, sog, cog, name)`, English Channel ship positions, written by `vision/fetch/ais.py`. Separate file because DuckDB allows one writer per file on Windows.
+
+## Search API (DRAFT: changes vs the original plan, please review)
+`python -m uvicorn vision.api.app:app --host 127.0.0.1 --port 8000`. The browser reaches it at `/argus/*` (Vite proxy).
+- `GET /search?q=snowy%20road&limit=10`: see [`examples/search.json`](examples/search.json). Adds a `name` field (readable camera name) to the planned format. One best frame per camera. Person, face and plate queries return 400.
+- `POST /agent {"text": "..."}` returns `{"schema_version": 1, "reply": "...", "search": <search response>|null}`. Groq tool-calling, key kept server-side; without a key it falls back to a plain search.
+- Index: `data/search.npz` (CLIP ViT-B-32 vectors plus camera metadata in one file) replaces the planned `search.index` + `search_ids.json`. Brute-force cosine; swap to FAISS if the data grows past about 100k frames.
+- Privacy: only camera-level scene search. Chrome and Edge send microphone audio to their own cloud speech service; Groq receives the spoken text and camera names, never images.

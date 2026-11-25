@@ -4,3 +4,7 @@ pillow
 ultralytics
 jsonschema
 websockets
+open_clip_torch
+fastapi
+uvicorn
+httpx
